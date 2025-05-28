@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 
 function TryUbuntu() {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [openApps, setOpenApps] = useState(['files']);
+  const [openApps, setOpenApps] = useState([]);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [terminalCommands, setTerminalCommands] = useState([
     { command: 'welcome@ubuntu:~$ ', output: '' },
     { command: '', output: 'Welcome to Ubuntu 24.04 LTS!' },
