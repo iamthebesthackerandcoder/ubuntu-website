@@ -227,9 +227,3 @@ We'll review your PR as soon as possible.
 ## License
 
 This project is currently not licensed.
-
-It is recommended to add a `LICENSE` file to the project root. Consider using a common open-source license such as the [MIT License](https://opensource.org/licenses/MIT) or the [Apache License 2.0](https://opensource.org/licenses/Apache-2.0).
-
-Once a license is chosen and the `LICENSE` file is added, update this section to refer to it, for example:
-
-"This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details."
