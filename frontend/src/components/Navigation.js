@@ -196,7 +196,7 @@ function Navigation() {
 
       <nav
         id="navigation"
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-orange-400/20 shadow-md ${
           scrolled ? 'nav-glass shadow-lg' : 'bg-transparent'
         } ${isDarkMode ? 'dark' : ''}`}
         role="navigation"
@@ -230,29 +230,52 @@ function Navigation() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => (
+          <div className="hidden lg:flex items-center space-x-4">
+            {navItems.slice(0, 4).map((item) => (
               <NavigationItem
                 key={item.path}
-                item={item}
+                item={{ ...item, icon: null }} // Hide icon on desktop
                 isActive={isActive(item.path)}
                 isDarkMode={isDarkMode}
                 isNavigating={isNavigating}
                 onNavClick={handleNavClick}
               />
             ))}
-
-            <div className="ml-6 pl-6 border-l border-gray-200 dark:border-gray-600 flex items-center space-x-4">
+            {/* More dropdown for remaining items */}
+            <div className="relative group">
+              <button className="flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                <span>More</span>
+                <span className="ml-1">▼</span>
+              </button>
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                {navItems.slice(4).map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-300 first:rounded-t-xl last:rounded-b-xl ${
+                      isActive(item.path)
+                        ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/30 dark:text-orange-400'
+                        : isDarkMode
+                          ? 'text-gray-200 hover:text-orange-400 hover:bg-orange-900/20'
+                          : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className="ml-8 pl-6 border-l border-gray-200 dark:border-gray-600 flex items-center space-x-4">
               <DarkModeToggle />
               <a
                 href="https://ubuntu.com/download"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-primary btn-enhanced text-sm px-6 py-2.5 font-semibold group relative overflow-hidden focus-ring"
+                className="btn btn-primary text-xs px-4 py-2 font-semibold group relative overflow-hidden focus-ring"
+                style={{ boxShadow: 'none', fontWeight: 500 }}
               >
-                <span className="relative z-10 flex items-center space-x-2">
-                  <span>Download Ubuntu</span>
-                  <span className="group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300">⬇️</span>
+                <span className="relative z-10 flex items-center">
+                  <span>Download</span>
                 </span>
               </a>
             </div>
