@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 function TryUbuntu() {
@@ -13,16 +13,90 @@ function TryUbuntu() {
     { command: 'welcome@ubuntu:~$ ', output: '' }
   ]);
 
+  // Current value being typed in the terminal
+  const [currentInput, setCurrentInput] = useState('');
+
+  // Ref to keep the terminal scrolled to the newest line
+  const terminalEndRef = useRef(null);
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Auto-dismiss the welcome overlay after 5 seconds
   useEffect(() => {
-    // Auto-dismiss welcome after 5 seconds
     const timer = setTimeout(() => setShowWelcome(false), 5000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Always keep the latest terminal output in view
+  useEffect(() => {
+    if (terminalEndRef.current) {
+      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [terminalCommands]);
+
+  // Global keyboard shortcuts (Ctrl+Alt+T opens terminal, Esc closes welcome)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 't') {
+        openApp('terminal');
+      }
+      if (e.key === 'Escape') {
+        setShowWelcome(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openApps]);
+
+  // Process commands entered in the terminal
+  const processInput = () => {
+    const input = currentInput.trim();
+    if (input === '') return;
+
+    const newLines = [{ command: 'welcome@ubuntu:~$ ', output: input }];
+
+    switch (input) {
+      case 'help':
+        newLines.push({ command: '', output: 'Supported commands: help, ls, about, clear, exit, open firefox' });
+        break;
+      case 'ls':
+        newLines.push({ command: '', output: 'Desktop  Documents  Downloads  Music  Pictures  Videos' });
+        break;
+      case 'about':
+        newLines.push({ command: '', output: 'Ubuntu 24.04 LTS (Noble Numbat) – free, open-source and always yours' });
+        break;
+      case 'clear':
+        setTerminalCommands([]);
+        setCurrentInput('');
+        return;
+      case 'exit':
+        closeApp('terminal');
+        return;
+      case 'open firefox':
+        openApp('firefox');
+        newLines.push({ command: '', output: 'Opening Firefox…' });
+        break;
+      default:
+        newLines.push({ command: '', output: `bash: ${input}: command not found` });
+    }
+
+    // Add a fresh prompt line after executing the command
+    newLines.push({ command: 'welcome@ubuntu:~$ ', output: '' });
+
+    setTerminalCommands((prev) => [...prev, ...newLines]);
+    setCurrentInput('');
+  };
+
+  // Handle Enter key inside terminal input
+  const handleTerminalKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      processInput();
+    }
+  };
 
   const openApp = (appId) => {
     if (!openApps.includes(appId)) {
@@ -201,18 +275,29 @@ function TryUbuntu() {
                   className="text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-full w-8 h-8 flex items-center justify-center text-xl transition-all"
                 >×</button>
               </div>
-              <div className="p-6 text-green-400 font-mono text-sm bg-gray-900">
-                <div className="space-y-2">
+              <div className="p-6 text-green-400 font-mono text-sm bg-gray-900 h-full flex flex-col">
+                {/* Terminal output */}
+                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
                   {terminalCommands.map((line, index) => (
-                    <div key={index} className="animate-fadeInUp" style={{ animationDelay: `${index * 0.2}s` }}>
+                    <div key={index}>
                       <span className="text-blue-400">{line.command}</span>
                       <span className="text-green-400">{line.output}</span>
                     </div>
                   ))}
-                  <div className="flex animate-fadeInUp" style={{ animationDelay: '1s' }}>
-                    <span className="text-blue-400">welcome@ubuntu:~$ </span>
-                    <span className="bg-green-400 w-3 h-6 ml-2 animate-pulse"></span>
-                  </div>
+                  <div ref={terminalEndRef}></div>
+                </div>
+
+                {/* Prompt */}
+                <div className="flex pt-2">
+                  <span className="text-blue-400">welcome@ubuntu:~$ </span>
+                  <input
+                    type="text"
+                    className="bg-transparent text-green-400 flex-1 outline-none ml-1"
+                    value={currentInput}
+                    onChange={(e) => setCurrentInput(e.target.value)}
+                    onKeyDown={handleTerminalKeyDown}
+                    autoFocus
+                  />
                 </div>
               </div>
             </div>
